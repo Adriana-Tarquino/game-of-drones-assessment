@@ -79,4 +79,67 @@ public class MoveRulesController : ControllerBase
             rule
         );
     }
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateRule(
+    int id,
+    UpdateMoveRuleDto dto)
+    {
+        var rule = await _context.MoveRules.FindAsync(id);
+
+        if (rule == null)
+        {
+            return NotFound("Rule not found.");
+        }
+
+        if (dto.MoveId == dto.BeatsMoveId)
+        {
+            return BadRequest("A move cannot beat itself.");
+        }
+
+        var moveExists = await _context.Moves
+            .AnyAsync(move => move.Id == dto.MoveId);
+
+        var beatsMoveExists = await _context.Moves
+            .AnyAsync(move => move.Id == dto.BeatsMoveId);
+
+        if (!moveExists || !beatsMoveExists)
+        {
+            return BadRequest("One or both moves do not exist.");
+        }
+
+        var duplicateExists = await _context.MoveRules
+            .AnyAsync(existingRule =>
+                existingRule.Id != id &&
+                existingRule.MoveId == dto.MoveId &&
+                existingRule.BeatsMoveId == dto.BeatsMoveId);
+
+        if (duplicateExists)
+        {
+            return Conflict("This rule already exists.");
+        }
+
+        rule.MoveId = dto.MoveId;
+        rule.BeatsMoveId = dto.BeatsMoveId;
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteRule(int id)
+    {
+        var rule = await _context.MoveRules.FindAsync(id);
+
+        if (rule == null)
+        {
+            return NotFound("Rule not found.");
+        }
+
+        _context.MoveRules.Remove(rule);
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+    
 }
