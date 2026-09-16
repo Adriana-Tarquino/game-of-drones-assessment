@@ -129,7 +129,7 @@ export class App {
       .pipe(finalize(() => this.loadingMoves.set(false)))
       .subscribe({
         next: (moves) => this.moves.set(moves),
-        error: (error) => this.showApiError(error, 'No se pudieron cargar los movimientos. Comprueba que el backend esté iniciado en http://localhost:5212.')
+        error: (error) => this.showApiError(error, 'No se pudieron cargar los movimientos. Verifica que la API esté disponible.')
       });
   }
 
