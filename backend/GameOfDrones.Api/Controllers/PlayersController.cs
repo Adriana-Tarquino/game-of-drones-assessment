@@ -19,7 +19,9 @@ public class PlayersController : ControllerBase
     public async Task<IActionResult> GetPlayers()
     {
         var players = await _context.Players
+            .AsNoTracking()
             .OrderByDescending(player => player.GamesWon)
+            .ThenBy(player => player.Name)
             .Select(player => new
             {
                 player.Id,
@@ -29,5 +31,22 @@ public class PlayersController : ControllerBase
             .ToListAsync();
 
         return Ok(players);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetPlayer(int id)
+    {
+        var player = await _context.Players
+            .AsNoTracking()
+            .Where(player => player.Id == id)
+            .Select(player => new
+            {
+                player.Id,
+                player.Name,
+                player.GamesWon
+            })
+            .FirstOrDefaultAsync();
+
+        return player is null ? NotFound("Player not found.") : Ok(player);
     }
 }

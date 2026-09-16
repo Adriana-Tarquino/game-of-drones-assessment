@@ -17,6 +17,28 @@ public class GamesController : ControllerBase
         _context = context;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetGames()
+    {
+        var games = await (
+            from game in _context.Games.AsNoTracking()
+            join player1 in _context.Players.AsNoTracking() on game.Player1Id equals player1.Id
+            join player2 in _context.Players.AsNoTracking() on game.Player2Id equals player2.Id
+            orderby game.CreatedAt descending
+            select new
+            {
+                game.Id,
+                Player1 = player1.Name,
+                Player2 = player2.Name,
+                game.Player1Score,
+                game.Player2Score,
+                game.IsFinished,
+                game.CreatedAt
+            }).ToListAsync();
+
+        return Ok(games);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateGame(CreateGameDto dto)
     {
