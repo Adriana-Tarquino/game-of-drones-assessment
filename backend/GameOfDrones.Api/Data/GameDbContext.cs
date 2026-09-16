@@ -16,6 +16,10 @@ public class GameDbContext : DbContext
 
     public DbSet<MoveRule> MoveRules => Set<MoveRule>();
 
+    public DbSet<Game> Games => Set<Game>();
+
+    public DbSet<Round> Rounds => Set<Round>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
