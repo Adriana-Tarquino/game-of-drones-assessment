@@ -2,6 +2,11 @@
 
 A full-stack implementation of the Paper, Rock, Scissors assessment. Two players share one computer, take turns selecting a move, and the first player to win three rounds wins the game.
 
+## Live demo
+
+- Frontend: https://game-of-drones-bqp65cxqg-adriana-tarquinos-projects.vercel.app/
+- API: https://game-of-drones-assessment.onrender.com/
+
 ## Features
 
 - Angular user interface with a sequential, private turn flow: Player 1 chooses first, then Player 2.
