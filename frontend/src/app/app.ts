@@ -17,6 +17,7 @@ export class App {
   readonly moves = signal<Move[]>([]);
   readonly game = signal<GameResponse | null>(null);
   readonly latestRound = signal<RoundResult | null>(null);
+  readonly playerTurn = signal<1 | 2>(1);
   readonly loadingMoves = signal(true);
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
@@ -27,7 +28,6 @@ export class App {
   player2MoveId: number | null = null;
 
   constructor() {
-    // Avoid an API call while Angular renders on the server.
     afterNextRender(() => this.loadMoves());
   }
 
@@ -48,6 +48,7 @@ export class App {
         next: (game) => {
           this.game.set(game);
           this.latestRound.set(null);
+          this.playerTurn.set(1);
           this.player1MoveId = null;
           this.player2MoveId = null;
         },
@@ -55,10 +56,34 @@ export class App {
       });
   }
 
-  playRound(): void {
+  continueRound(): void {
+    if (this.playerTurn() === 1) {
+      if (this.player1MoveId === null) {
+        this.error.set('Elige el movimiento de Player 1.');
+        return;
+      }
+
+      this.error.set(null);
+      this.playerTurn.set(2);
+      return;
+    }
+
+    if (this.player2MoveId === null) {
+      this.error.set('Elige el movimiento de Player 2.');
+      return;
+    }
+
+    this.playRound();
+  }
+
+  currentPlayerName(): string {
+    const game = this.game();
+    return this.playerTurn() === 1 ? game?.player1 ?? '' : game?.player2 ?? '';
+  }
+
+  private playRound(): void {
     const game = this.game();
     if (!game || this.player1MoveId === null || this.player2MoveId === null) {
-      this.error.set('Cada jugador debe elegir un movimiento.');
       return;
     }
 
@@ -78,6 +103,7 @@ export class App {
             player2Score: round.player2Score,
             isFinished: round.gameFinished
           });
+          this.playerTurn.set(1);
           this.player1MoveId = null;
           this.player2MoveId = null;
         },
@@ -88,7 +114,10 @@ export class App {
   newGame(): void {
     this.game.set(null);
     this.latestRound.set(null);
+    this.playerTurn.set(1);
     this.error.set(null);
+    this.player1Name = '';
+    this.player2Name = '';
     this.player1MoveId = null;
     this.player2MoveId = null;
   }

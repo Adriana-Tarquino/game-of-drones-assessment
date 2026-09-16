@@ -1,6 +1,28 @@
 @GameOfDrones.Api_HostAddress = http://localhost:5212
 
-GET {{GameOfDrones.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Default moves
+GET {{GameOfDrones.Api_HostAddress}}/api/moves
 
-###
+### Default rules
+GET {{GameOfDrones.Api_HostAddress}}/api/move-rules
+
+### Create a game
+POST {{GameOfDrones.Api_HostAddress}}/api/games
+Content-Type: application/json
+
+{
+  "player1Name": "Ana",
+  "player2Name": "Luis"
+}
+
+### Play a round: Paper beats Rock
+POST {{GameOfDrones.Api_HostAddress}}/api/games/1/rounds
+Content-Type: application/json
+
+{
+  "player1MoveId": 2,
+  "player2MoveId": 1
+}
+
+### Player ranking
+GET {{GameOfDrones.Api_HostAddress}}/api/players

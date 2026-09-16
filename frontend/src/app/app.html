@@ -2,8 +2,8 @@
   <section class="game-card" aria-labelledby="page-title">
     <header>
       <p class="eyebrow">GAME OF DRONES</p>
-      <h1 id="page-title">Duelo de movimientos</h1>
-      <p class="intro">El primer jugador que gane tres rondas se lleva la partida.</p>
+      <h1 id="page-title">Paper, Rock, Scissors</h1>
+      <p class="intro">Gana quien llegue primero a tres victorias.</p>
     </header>
 
     @if (error(); as message) {
@@ -11,62 +11,69 @@
     }
 
     @if (loadingMoves()) {
-      <p class="status">Conectando con el backend y cargando movimientos…</p>
+      <p class="status">Cargando movimientos…</p>
     } @else if (!game()) {
       <form (ngSubmit)="createGame()" class="setup-form">
         <label>
-          Jugador 1
-          <input name="player1Name" [(ngModel)]="player1Name" maxlength="50" placeholder="Nombre" [disabled]="submitting()" />
+          Player 1
+          <input name="player1Name" [(ngModel)]="player1Name" maxlength="50" placeholder="Nombre" [disabled]="submitting()" autofocus />
         </label>
         <label>
-          Jugador 2
+          Player 2
           <input name="player2Name" [(ngModel)]="player2Name" maxlength="50" placeholder="Nombre" [disabled]="submitting()" />
         </label>
         <button type="submit" [disabled]="submitting() || moves().length === 0">
-          {{ submitting() ? 'Creando…' : 'Empezar partida' }}
+          {{ submitting() ? 'Iniciando…' : 'Start game' }}
         </button>
       </form>
     } @else {
       <section class="match" aria-live="polite">
-        <div class="scoreboard">
+        <div class="scoreboard" aria-label="Marcador">
           <div><strong>{{ game()!.player1 }}</strong><span>{{ game()!.player1Score }}</span></div>
-          <p>vs</p>
+          <p>—</p>
           <div><strong>{{ game()!.player2 }}</strong><span>{{ game()!.player2Score }}</span></div>
         </div>
 
         @if (game()!.isFinished) {
           <p class="winner">¡{{ latestRound()?.gameWinner }} ganó la partida!</p>
-          <button type="button" (click)="newGame()">Nueva partida</button>
+          <button type="button" (click)="newGame()">Play again</button>
         } @else {
-          <form (ngSubmit)="playRound()" class="round-form">
-            <label>
-              Movimiento de {{ game()!.player1 }}
-              <select name="player1Move" [(ngModel)]="player1MoveId" [disabled]="submitting()">
-                <option [ngValue]="null">Elige un movimiento</option>
-                @for (move of moves(); track move.id) {
-                  <option [ngValue]="move.id">{{ move.name }}</option>
-                }
-              </select>
-            </label>
-            <label>
-              Movimiento de {{ game()!.player2 }}
-              <select name="player2Move" [(ngModel)]="player2MoveId" [disabled]="submitting()">
-                <option [ngValue]="null">Elige un movimiento</option>
-                @for (move of moves(); track move.id) {
-                  <option [ngValue]="move.id">{{ move.name }}</option>
-                }
-              </select>
-            </label>
+          <form (ngSubmit)="continueRound()" class="round-form">
+            <p class="round-label">Ronda {{ (latestRound()?.round ?? 0) + 1 }}</p>
+            <h2>Turno de {{ currentPlayerName() }}</h2>
+            <p class="hint">El otro jugador debe mirar hacia otro lado.</p>
+
+            @if (playerTurn() === 1) {
+              <label>
+                Elige tu movimiento
+                <select name="player1Move" [(ngModel)]="player1MoveId" [disabled]="submitting()">
+                  <option [ngValue]="null">Selecciona una opción</option>
+                  @for (move of moves(); track move.id) {
+                    <option [ngValue]="move.id">{{ move.name }}</option>
+                  }
+                </select>
+              </label>
+            } @else {
+              <label>
+                Elige tu movimiento
+                <select name="player2Move" [(ngModel)]="player2MoveId" [disabled]="submitting()" autofocus>
+                  <option [ngValue]="null">Selecciona una opción</option>
+                  @for (move of moves(); track move.id) {
+                    <option [ngValue]="move.id">{{ move.name }}</option>
+                  }
+                </select>
+              </label>
+            }
+
             <button type="submit" [disabled]="submitting()">
-              {{ submitting() ? 'Jugando…' : 'Jugar ronda' }}
+              {{ submitting() ? 'Calculando…' : playerTurn() === 1 ? 'Continuar' : 'Ver resultado' }}
             </button>
           </form>
         }
 
         @if (latestRound(); as round) {
           <p class="round-result">
-            Ronda {{ round.round }}: {{ round.player1Move }} contra {{ round.player2Move }}.
-            {{ round.roundWinner ? 'Ganó ' + round.roundWinner + '.' : 'Empate.' }}
+            Ronda {{ round.round }}: {{ round.roundWinner ? 'ganó ' + round.roundWinner : 'empate' }}.
           </p>
         }
       </section>
